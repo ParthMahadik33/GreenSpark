@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GreenSpark - Connect. Volunteer. Make an Impact.</title>
+    <link rel="stylesheet" href="static/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-content">
+                <div class="logo">
+                    <i class="fas fa-leaf"></i>
+                    <span>GreenSpark</span>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="#home" class="active">Home</a></li>
+                    <li><a href="#campaigns">Campaigns</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#impact">Impact</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+                <div class="nav-buttons">
+                    <a href="/login" class="btn btn-outline">Login</a>
+                    <a href="/register" class="btn btn-primary">Sign Up</a>
+                </div>
+                <div class="mobile-menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-overlay"></div>
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">Make a Difference, <span class="highlight">One Drive at a Time</span></h1>
+                <p class="hero-subtitle">Connect with NGOs, join sustainability campaigns, and track your environmental impact</p>
+                <div class="hero-buttons">
+                    <a href="/register" class="btn btn-large btn-primary">Get Started</a>
+                    <a href="#campaigns" class="btn btn-large btn-outline-white">Explore Campaigns</a>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <i class="fas fa-users"></i>
+                        <div>
+                            <h3>5000+</h3>
+                            <p>Active Volunteers</p>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-hands-helping"></i>
+                        <div>
+                            <h3>250+</h3>
+                            <p>NGO Partners</p>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-calendar-check"></i>
+                        <div>
+                            <h3>1200+</h3>
+                            <p>Completed Drives</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <div class="section-header">
+                <h2>Why Choose <span class="highlight">GreenSpark?</span></h2>
+                <p>Empowering communities to create sustainable change</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-map-marked-alt"></i>
+                    </div>
+                    <h3>Campaign Discovery</h3>
+                    <p>Find nearby cleanliness and sustainability drives using our interactive map-based search</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <h3>AI Recommendations</h3>
+                    <p>Get personalized campaign suggestions based on your interests and location</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <h3>Eco Points & Badges</h3>
+                    <p>Earn rewards for participation and compete on leaderboards</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3>Team Collaboration</h3>
+                    <p>Form groups, join drives together, and track collective contributions</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3>Impact Tracking</h3>
+                    <p>Monitor your environmental impact with detailed analytics and reports</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>Verified NGOs</h3>
+                    <p>Connect with authentic, verified organizations for trusted collaboration</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Campaigns Preview Section -->
+    <section id="campaigns" class="campaigns-preview">
+        <div class="container">
+            <div class="section-header">
+                <h2>Upcoming <span class="highlight">Campaigns</span></h2>
+                <p>Join these exciting sustainability drives near you</p>
+            </div>
+            <div class="campaigns-grid">
+                <div class="campaign-card">
+                    <div class="campaign-image">
+                        <img src="static/images/beach-cleanup.jpg" alt="Beach Cleanup">
+                        <div class="campaign-badge">Featured</div>
+                    </div>
+                    <div class="campaign-content">
+                        <div class="campaign-meta">
+                            <span><i class="fas fa-calendar"></i> Dec 20, 2025</span>
+                            <span><i class="fas fa-map-marker-alt"></i> Mumbai Beach</span>
+                        </div>
+                        <h3>Coastal Cleanup Drive</h3>
+                        <p>Join us for a massive beach cleanup initiative to protect marine life</p>
+                        <div class="campaign-footer">
+                            <div class="campaign-volunteers">
+                                <i class="fas fa-users"></i>
+                                <span>45/100 Volunteers</span>
+                            </div>
+                            <a href="/campaigns/1" class="btn btn-small btn-primary">Join Now</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="campaign-card">
+                    <div class="campaign-image">
+                        <img src="static/images/tree-planting.jpg" alt="Tree Planting">
+                    </div>
+                    <div class="campaign-content">
+                        <div class="campaign-meta">
+                            <span><i class="fas fa-calendar"></i> Dec 25, 2025</span>
+                            <span><i class="fas fa-map-marker-alt"></i> City Park</span>
+                        </div>
+                        <h3>Urban Reforestation</h3>
+                        <p>Help us plant 500 trees to create a greener urban environment</p>
+                        <div class="campaign-footer">
+                            <div class="campaign-volunteers">
+                                <i class="fas fa-users"></i>
+                                <span>30/80 Volunteers</span>
+                            </div>
+                            <a href="/campaigns/2" class="btn btn-small btn-primary">Join Now</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="campaign-card">
+                    <div class="campaign-image">
+                        <img src="static/images/waste-segregation.jpg" alt="Waste Management">
+                    </div>
+                    <div class="campaign-content">
+                        <div class="campaign-meta">
+                            <span><i class="fas fa-calendar"></i> Jan 5, 2026</span>
+                            <span><i class="fas fa-map-marker-alt"></i> Community Center</span>
+                        </div>
+                        <h3>Waste Segregation Workshop</h3>
+                        <p>Learn and teach proper waste management practices to the community</p>
+                        <div class="campaign-footer">
+                            <div class="campaign-volunteers">
+                                <i class="fas fa-users"></i>
+                                <span>20/50 Volunteers</span>
+                            </div>
+                            <a href="/campaigns/3" class="btn btn-small btn-primary">Join Now</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center">
+                <a href="/campaigns" class="btn btn-outline">View All Campaigns</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about">
+        <div class="container">
+            <div class="about-content">
+                <div class="about-text">
+                    <h2>About <span class="highlight">GreenSpark</span></h2>
+                    <p class="lead">Building a sustainable future through community collaboration</p>
+                    <p>GreenSpark is a revolutionary platform that bridges the gap between passionate volunteers and impactful NGOs. We understand that environmental challenges require collective action, which is why we've created a seamless ecosystem where sustainability drives are easily discoverable, manageable, and measurable.</p>
+                    <p>Our mission is to make environmental activism accessible to everyone, transforming individual efforts into collective impact through technology and community engagement.</p>
+                    <div class="about-highlights">
+                        <div class="highlight-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Verified NGO partnerships</span>
+                        </div>
+                        <div class="highlight-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>AI-powered personalization</span>
+                        </div>
+                        <div class="highlight-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Real-time impact tracking</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="about-image">
+                    <img src="static/images/volunteers.jpg" alt="Volunteers">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Impact Section -->
+    <section id="impact" class="impact">
+        <div class="container">
+            <div class="section-header">
+                <h2>Our <span class="highlight">Impact</span></h2>
+                <p>Together, we're making a real difference</p>
+            </div>
+            <div class="impact-grid">
+                <div class="impact-card">
+                    <i class="fas fa-recycle"></i>
+                    <h3>50,000+ kg</h3>
+                    <p>Waste Collected</p>
+                </div>
+                <div class="impact-card">
+                    <i class="fas fa-tree"></i>
+                    <h3>10,000+</h3>
+                    <p>Trees Planted</p>
+                </div>
+                <div class="impact-card">
+                    <i class="fas fa-water"></i>
+                    <h3>25+</h3>
+                    <p>Water Bodies Cleaned</p>
+                </div>
+                <div class="impact-card">
+                    <i class="fas fa-city"></i>
+                    <h3>100+</h3>
+                    <p>Communities Served</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <div class="container">
+            <div class="cta-content">
+                <h2>Ready to Make a Difference?</h2>
+                <p>Join thousands of volunteers creating positive environmental change</p>
+                <a href="/register" class="btn btn-large btn-white">Start Your Journey</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contact" class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="logo">
+                        <i class="fas fa-leaf"></i>
+                        <span>GreenSpark</span>
+                    </div>
+                    <p>Connecting volunteers and NGOs for a sustainable future</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#campaigns">Campaigns</a></li>
+                        <li><a href="#about">About Us</a></li>
+                        <li><a href="#impact">Impact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>For NGOs</h4>
+                    <ul>
+                        <li><a href="/ngo-register">Register Your NGO</a></li>
+                        <li><a href="/create-campaign">Create Campaign</a></li>
+                        <li><a href="/ngo-dashboard">NGO Dashboard</a></li>
+                        <li><a href="/resources">Resources</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact Us</h4>
+                    <ul>
+                        <li><i class="fas fa-envelope"></i> info@greenspark.org</li>
+                        <li><i class="fas fa-phone"></i> +91 98765 43210</li>
+                        <li><i class="fas fa-map-marker-alt"></i> Mumbai, Maharashtra</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 GreenSpark. All rights reserved. | <a href="/privacy">Privacy Policy</a> | <a href="/terms">Terms of Service</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="static/js/main.js"></script>
+</body>
+</html>

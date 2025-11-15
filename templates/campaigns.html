@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campaigns - GreenSpark</title>
+    <link rel="stylesheet" href="static/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .campaigns-page {
+            padding: 100px 0 60px;
+            min-height: 100vh;
+            background-color: var(--light-color);
+        }
+
+        .campaigns-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--white);
+            padding: 3rem 0;
+            margin-bottom: 3rem;
+        }
+
+        .campaigns-header-content {
+            text-align: center;
+        }
+
+        .campaigns-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .campaigns-header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .filters-section {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 1rem;
+            align-items: end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            color: var(--text-dark);
+            font-size: 0.9rem;
+        }
+
+        .filter-group input,
+        .filter-group select {
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .filter-group input:focus,
+        .filter-group select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .campaigns-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .campaign-status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .status-upcoming {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-ongoing {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+
+        .status-completed {
+            background-color: #f3f4f6;
+            color: #4b5563;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+        }
+
+        .pagination button {
+            padding: 0.5rem 1rem;
+            border: 2px solid #e5e7eb;
+            background: var(--white);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .pagination button:hover:not(:disabled) {
+            border-color: var(--primary-color);
+            background: var(--light-color);
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination .active {
+            background: var(--primary-color);
+            color: var(--white);
+            border-color: var(--primary-color);
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+        }
+
+        .no-results i {
+            font-size: 4rem;
+            color: var(--text-light);
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .no-results h3 {
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .no-results p {
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        @media (max-width: 968px) {
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-actions {
+                width: 100%;
+            }
+
+            .filter-actions button {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-content">
+                <div class="logo">
+                    <i class="fas fa-leaf"></i>
+                    <a href="/" style="color: inherit;"><span>GreenSpark</span></a>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/campaigns" class="active">Campaigns</a></li>
+                    <li><a href="/#about">About</a></li>
+                    <li><a href="/#contact">Contact</a></li>
+                </ul>
+                <div class="nav-buttons">
+                    {% if user %}
+                        <a href="/dashboard" class="btn btn-outline">Dashboard</a>
+                        <a href="/logout" class="btn btn-primary">Logout</a>
+                    {% else %}
+                        <a href="/login" class="btn btn-outline">Login</a>
+                        <a href="/register" class="btn btn-primary">Sign Up</a>
+                    {% endif %}
+                </div>
+                <div class="mobile-menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Campaigns Header -->
+    <div class="campaigns-header">
+        <div class="container">
+            <div class="campaigns-header-content">
+                <h1>Discover Campaigns</h1>
+                <p>Join sustainability drives and make a positive impact</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Campaigns Page Content -->
+    <div class="campaigns-page">
+        <div class="container">
+            <!-- Filters Section -->
+            <div class="filters-section">
+                <form id="filter-form" method="GET" action="/campaigns">
+                    <div class="filters-grid">
+                        <div class="filter-group">
+                            <label for="campaign-search">
+                                <i class="fas fa-search"></i> Search Campaigns
+                            </label>
+                            <input 
+                                type="text" 
+                                id="campaign-search" 
+                                name="search" 
+                                placeholder="Search by title or description..."
+                                value="{{ search or '' }}"
+                            >
+                        </div>
+                        <div class="filter-group">
+                            <label for="category-filter">
+                                <i class="fas fa-tags"></i> Category
+                            </label>
+                            <select id="category-filter" name="category">
+                                <option value="">All Categories</option>
+                                <option value="cleanup" {% if category == 'cleanup' %}selected{% endif %}>Cleanup</option>
+                                <option value="tree-planting" {% if category == 'tree-planting' %}selected{% endif %}>Tree Planting</option>
+                                <option value="recycling" {% if category == 'recycling' %}selected{% endif %}>Recycling</option>
+                                <option value="awareness" {% if category == 'awareness' %}selected{% endif %}>Awareness</option>
+                                <option value="conservation" {% if category == 'conservation' %}selected{% endif %}>Conservation</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="location-filter">
+                                <i class="fas fa-map-marker-alt"></i> Location
+                            </label>
+                            <select id="location-filter" name="location">
+                                <option value="">All Locations</option>
+                                <option value="mumbai" {% if location == 'mumbai' %}selected{% endif %}>Mumbai</option>
+                                <option value="delhi" {% if location == 'delhi' %}selected{% endif %}>Delhi</option>
+                                <option value="bangalore" {% if location == 'bangalore' %}selected{% endif %}>Bangalore</option>
+                                <option value="chennai" {% if location == 'chennai' %}selected{% endif %}>Chennai</option>
+                                <option value="kolkata" {% if location == 'kolkata' %}selected{% endif %}>Kolkata</option>
+                            </select>
+                        </div>
+                        <div class="filter-group filter-actions">
+                            <label>&nbsp;</label>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button type="submit" class="btn btn-primary" style="flex: 1;">
+                                    <i class="fas fa-filter"></i> Filter
+                                </button>
+                                <a href="/campaigns" class="btn btn-outline" style="flex: 1; text-align: center;">
+                                    <i class="fas fa-redo"></i> Reset
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Campaigns Grid -->
+            {% if campaigns and campaigns|length > 0 %}
+                <div class="campaigns-grid">
+                    {% for campaign in campaigns %}
+                    <div class="campaign-card" data-category="{{ campaign.category }}" data-location="{{ campaign.location }}">
+                        <div class="campaign-image">
+                            <img src="{{ campaign.image or 'static/images/default-campaign.jpg' }}" alt="{{ campaign.title }}">
+                            {% if campaign.featured %}
+                            <div class="campaign-badge">Featured</div>
+                            {% endif %}
+                        </div>
+                        <div class="campaign-content">
+                            <div class="campaign-status status-{{ campaign.status }}">
+                                {{ campaign.status|title }}
+                            </div>
+                            <div class="campaign-meta">
+                                <span><i class="fas fa-calendar"></i> {{ campaign.date }}</span>
+                                <span><i class="fas fa-map-marker-alt"></i> {{ campaign.location }}</span>
+                            </div>
+                            <h3>{{ campaign.title }}</h3>
+                            <p>{{ campaign.description[:150] }}{% if campaign.description|length > 150 %}...{% endif %}</p>
+                            <div class="campaign-footer">
+                                <div class="campaign-volunteers">
+                                    <i class="fas fa-users"></i>
+                                    <span>{{ campaign.volunteers_joined }}/{{ campaign.volunteers_needed }} Volunteers</span>
+                                </div>
+                                <a href="/campaigns/{{ campaign.id }}" class="btn btn-small btn-primary">View Details</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Pagination -->
+                {% if total_pages > 1 %}
+                <div class="pagination">
+                    {% if current_page > 1 %}
+                    <a href="?page={{ current_page - 1 }}{% if search %}&search={{ search }}{% endif %}{% if category %}&category={{ category }}{% endif %}{% if location %}&location={{ location }}{% endif %}" class="btn btn-outline">
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </a>
+                    {% endif %}
+
+                    {% for page_num in range(1, total_pages + 1) %}
+                        {% if page_num == current_page %}
+                        <span class="btn active">{{ page_num }}</span>
+                        {% elif page_num <= 3 or page_num > total_pages - 3 or (page_num >= current_page - 1 and page_num <= current_page + 1) %}
+                        <a href="?page={{ page_num }}{% if search %}&search={{ search }}{% endif %}{% if category %}&category={{ category }}{% endif %}{% if location %}&location={{ location }}{% endif %}" class="btn btn-outline">{{ page_num }}</a>
+                        {% elif page_num == 4 or page_num == total_pages - 3 %}
+                        <span class="btn" style="border: none; cursor: default;">...</span>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if current_page < total_pages %}
+                    <a href="?page={{ current_page + 1 }}{% if search %}&search={{ search }}{% endif %}{% if category %}&category={{ category }}{% endif %}{% if location %}&location={{ location }}{% endif %}" class="btn btn-outline">
+                        Next <i class="fas fa-chevron-right"></i>
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            {% else %}
+                <div class="no-results">
+                    <i class="fas fa-search"></i>
+                    <h3>No campaigns found</h3>
+                    <p>Try adjusting your filters or check back later for new campaigns.</p>
+                    <a href="/campaigns" class="btn btn-primary">View All Campaigns</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer footer-minimal">
+        <div class="container">
+            <div class="footer-minimal-content">
+                <div class="logo">
+                    <i class="fas fa-leaf"></i>
+                    <span>GreenSpark</span>
+                </div>
+                <p>&copy; 2025 GreenSpark. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="/privacy">Privacy Policy</a>
+                    <a href="/terms">Terms of Service</a>
+                    <a href="/#contact">Contact</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="static/js/main.js"></script>
+    <script>
+        // Auto-submit filter form on change
+        document.getElementById('category-filter')?.addEventListener('change', function() {
+            document.getElementById('filter-form').submit();
+        });
+
+        document.getElementById('location-filter')?.addEventListener('change', function() {
+            document.getElementById('filter-form').submit();
+        });
+    </script>
+</body>
+</html>
+

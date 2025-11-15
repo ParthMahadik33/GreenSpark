@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if campaign %}{{ campaign.title }}{% else %}Campaign Details{% endif %} - GreenSpark</title>
+    <link rel="stylesheet" href="static/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .campaign-detail {
+            padding: 100px 0 60px;
+            min-height: 100vh;
+            background-color: var(--light-color);
+        }
+
+        .campaign-hero {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--white);
+            padding: 3rem 0;
+            margin-bottom: 3rem;
+        }
+
+        .campaign-hero-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+
+        .campaign-hero-text h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .campaign-hero-text p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .campaign-status-badge {
+            display: inline-block;
+            padding: 0.5rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .status-upcoming {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: var(--white);
+        }
+
+        .status-ongoing {
+            background-color: rgba(255, 255, 255, 0.3);
+            color: var(--white);
+        }
+
+        .status-completed {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: var(--white);
+        }
+
+        .campaign-detail-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .campaign-main {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .campaign-section {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+        }
+
+        .campaign-section h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .campaign-section h2 i {
+            color: var(--primary-color);
+        }
+
+        .campaign-image-large {
+            width: 100%;
+            height: 400px;
+            border-radius: 12px;
+            overflow: hidden;
+            background-color: var(--light-color);
+            margin-bottom: 2rem;
+        }
+
+        .campaign-image-large img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .campaign-info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: var(--light-color);
+            border-radius: 8px;
+        }
+
+        .info-item i {
+            color: var(--primary-color);
+            font-size: 1.2rem;
+        }
+
+        .info-item-content h4 {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-bottom: 0.25rem;
+        }
+
+        .info-item-content p {
+            font-size: 1rem;
+            color: var(--text-dark);
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .campaign-description {
+            line-height: 1.8;
+            color: var(--text-dark);
+        }
+
+        .campaign-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .action-card {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .action-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+        }
+
+        .volunteer-progress {
+            margin: 1.5rem 0;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: var(--light-color);
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            border-radius: 15px;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .volunteer-count {
+            text-align: center;
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .ngo-card {
+            background: var(--light-color);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+
+        .ngo-card h4 {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-dark);
+        }
+
+        .ngo-card p {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .volunteers-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .volunteer-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-weight: 600;
+        }
+
+        .requirements-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .requirements-list li {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--light-color);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .requirements-list li:last-child {
+            border-bottom: none;
+        }
+
+        .requirements-list li i {
+            color: var(--primary-color);
+        }
+
+        @media (max-width: 968px) {
+            .campaign-detail-content {
+                grid-template-columns: 1fr;
+            }
+
+            .campaign-info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .campaign-hero-content {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-content">
+                <div class="logo">
+                    <i class="fas fa-leaf"></i>
+                    <a href="/" style="color: inherit;"><span>GreenSpark</span></a>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/campaigns" class="active">Campaigns</a></li>
+                    <li><a href="/#about">About</a></li>
+                    <li><a href="/#contact">Contact</a></li>
+                </ul>
+                <div class="nav-buttons">
+                    {% if user %}
+                        <a href="/dashboard" class="btn btn-outline">Dashboard</a>
+                        <a href="/logout" class="btn btn-primary">Logout</a>
+                    {% else %}
+                        <a href="/login" class="btn btn-outline">Login</a>
+                        <a href="/register" class="btn btn-primary">Sign Up</a>
+                    {% endif %}
+                </div>
+                <div class="mobile-menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    {% if campaign %}
+    <!-- Campaign Hero -->
+    <div class="campaign-hero">
+        <div class="container">
+            <div class="campaign-hero-content">
+                <div class="campaign-hero-text">
+                    <div class="campaign-status-badge status-{{ campaign.status }}">
+                        {{ campaign.status|title }}
+                    </div>
+                    <h1>{{ campaign.title }}</h1>
+                    <p>{{ campaign.short_description or campaign.description[:100] }}</p>
+                </div>
+                <div>
+                    <a href="/campaigns" class="btn btn-white">
+                        <i class="fas fa-arrow-left"></i> Back to Campaigns
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Campaign Detail Content -->
+    <div class="campaign-detail">
+        <div class="container">
+            <div class="campaign-detail-content">
+                <!-- Main Content -->
+                <div class="campaign-main">
+                    <!-- Campaign Image -->
+                    <div class="campaign-section">
+                        <div class="campaign-image-large">
+                            <img src="{{ campaign.image or 'static/images/default-campaign.jpg' }}" alt="{{ campaign.title }}">
+                        </div>
+                    </div>
+
+                    <!-- Campaign Info -->
+                    <div class="campaign-section">
+                        <h2><i class="fas fa-info-circle"></i> Campaign Information</h2>
+                        <div class="campaign-info-grid">
+                            <div class="info-item">
+                                <i class="fas fa-calendar"></i>
+                                <div class="info-item-content">
+                                    <h4>Date & Time</h4>
+                                    <p>{{ campaign.date }} at {{ campaign.time or 'TBD' }}</p>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <div class="info-item-content">
+                                    <h4>Location</h4>
+                                    <p>{{ campaign.location }}</p>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-users"></i>
+                                <div class="info-item-content">
+                                    <h4>Volunteers</h4>
+                                    <p>{{ campaign.volunteers_joined }}/{{ campaign.volunteers_needed }}</p>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-tag"></i>
+                                <div class="info-item-content">
+                                    <h4>Category</h4>
+                                    <p>{{ campaign.category|title }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="campaign-section">
+                        <h2><i class="fas fa-align-left"></i> About This Campaign</h2>
+                        <div class="campaign-description">
+                            {{ campaign.description|safe }}
+                        </div>
+                    </div>
+
+                    <!-- Requirements -->
+                    {% if campaign.requirements %}
+                    <div class="campaign-section">
+                        <h2><i class="fas fa-list-check"></i> Requirements</h2>
+                        <ul class="requirements-list">
+                            {% for requirement in campaign.requirements %}
+                            <li>
+                                <i class="fas fa-check-circle"></i>
+                                <span>{{ requirement }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
+                    <!-- Volunteers -->
+                    {% if volunteers and volunteers|length > 0 %}
+                    <div class="campaign-section">
+                        <h2><i class="fas fa-users"></i> Volunteers</h2>
+                        <div class="volunteers-list">
+                            {% for volunteer in volunteers %}
+                            <div class="volunteer-avatar" title="{{ volunteer.name }}">
+                                {{ volunteer.name[0]|upper }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Sidebar -->
+                <div class="campaign-sidebar">
+                    <!-- Action Card -->
+                    <div class="action-card">
+                        <h3>Join This Campaign</h3>
+                        <div class="volunteer-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: {{ (campaign.volunteers_joined / campaign.volunteers_needed * 100)|min(100) }}%;">
+                                    {{ ((campaign.volunteers_joined / campaign.volunteers_needed) * 100)|round }}%
+                                </div>
+                            </div>
+                            <div class="volunteer-count">
+                                {{ campaign.volunteers_joined }} of {{ campaign.volunteers_needed }} volunteers
+                            </div>
+                        </div>
+                        {% if user %}
+                            {% if user_joined %}
+                                <button class="btn btn-outline btn-full" disabled style="margin-top: 1rem;">
+                                    <i class="fas fa-check"></i> Already Joined
+                                </button>
+                            {% elif campaign.volunteers_joined >= campaign.volunteers_needed %}
+                                <button class="btn btn-outline btn-full" disabled style="margin-top: 1rem;">
+                                    <i class="fas fa-times"></i> Campaign Full
+                                </button>
+                            {% else %}
+                                <form method="POST" action="/campaigns/{{ campaign.id }}/join" style="margin-top: 1rem;">
+                                    <button type="submit" class="btn btn-primary btn-full">
+                                        <i class="fas fa-hand-holding-heart"></i> Join Campaign
+                                    </button>
+                                </form>
+                            {% endif %}
+                        {% else %}
+                            <a href="/login?redirect=/campaigns/{{ campaign.id }}" class="btn btn-primary btn-full" style="margin-top: 1rem;">
+                                <i class="fas fa-sign-in-alt"></i> Login to Join
+                            </a>
+                        {% endif %}
+                    </div>
+
+                    <!-- NGO Info -->
+                    {% if campaign.ngo %}
+                    <div class="campaign-section">
+                        <h2><i class="fas fa-building"></i> Organized By</h2>
+                        <div class="ngo-card">
+                            <h4>{{ campaign.ngo.name }}</h4>
+                            <p>{{ campaign.ngo.description or 'Verified NGO Partner' }}</p>
+                            {% if campaign.ngo.contact %}
+                            <p style="margin-top: 0.5rem;">
+                                <i class="fas fa-envelope"></i> {{ campaign.ngo.contact }}
+                            </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Share Campaign -->
+                    <div class="campaign-section">
+                        <h2><i class="fas fa-share-alt"></i> Share Campaign</h2>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <button class="btn btn-outline" onclick="shareOnFacebook()" style="flex: 1; min-width: 120px;">
+                                <i class="fab fa-facebook"></i> Facebook
+                            </button>
+                            <button class="btn btn-outline" onclick="shareOnTwitter()" style="flex: 1; min-width: 120px;">
+                                <i class="fab fa-twitter"></i> Twitter
+                            </button>
+                            <button class="btn btn-outline" onclick="copyLink()" style="flex: 1; min-width: 120px;">
+                                <i class="fas fa-link"></i> Copy Link
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <!-- Campaign Not Found -->
+    <div class="campaign-detail">
+        <div class="container">
+            <div class="campaign-section" style="text-align: center; padding: 4rem 2rem;">
+                <i class="fas fa-exclamation-circle" style="font-size: 4rem; color: var(--text-light); margin-bottom: 1rem;"></i>
+                <h2>Campaign Not Found</h2>
+                <p style="color: var(--text-light); margin-bottom: 2rem;">The campaign you're looking for doesn't exist or has been removed.</p>
+                <a href="/campaigns" class="btn btn-primary">Browse All Campaigns</a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Footer -->
+    <footer class="footer footer-minimal">
+        <div class="container">
+            <div class="footer-minimal-content">
+                <div class="logo">
+                    <i class="fas fa-leaf"></i>
+                    <span>GreenSpark</span>
+                </div>
+                <p>&copy; 2025 GreenSpark. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="/privacy">Privacy Policy</a>
+                    <a href="/terms">Terms of Service</a>
+                    <a href="/#contact">Contact</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="static/js/main.js"></script>
+    <script>
+        function shareOnFacebook() {
+            const url = encodeURIComponent(window.location.href);
+            window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
+        }
+
+        function shareOnTwitter() {
+            const url = encodeURIComponent(window.location.href);
+            const text = encodeURIComponent('{% if campaign %}{{ campaign.title }}{% endif %}');
+            window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank');
+        }
+
+        function copyLink() {
+            navigator.clipboard.writeText(window.location.href).then(() => {
+                alert('Link copied to clipboard!');
+            }).catch(() => {
+                alert('Failed to copy link. Please copy manually.');
+            });
+        }
+    </script>
+</body>
+</html>
+
