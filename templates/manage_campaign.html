@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Campaign - GreenSpark</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        .header {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .volunteer-list {
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .volunteer-item {
+            padding: 1.5rem;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .volunteer-item:last-child {
+            border-bottom: none;
+        }
+
+        .volunteer-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .avatar {
+            width: 50px;
+            height: 50px;
+            background: var(--light-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-color);
+            font-size: 1.5rem;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .status-joined {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .status-completed {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .btn-verify {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-verify:hover {
+            opacity: 0.9;
+        }
+
+        .btn-verify:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container" style="padding: 0;">
+            <div class="nav-content">
+                <div class="logo">
+                    <i class="fas fa-leaf"></i>
+                    <span>GreenSpark</span>
+                </div>
+                <div class="nav-buttons">
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-outline">Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>{{ campaign.title }}</h1>
+                <p>Manage Volunteers</p>
+            </div>
+            <div class="stats">
+                <strong>{{ volunteers|length }}</strong> Volunteers
+            </div>
+        </div>
+
+        <div class="volunteer-list">
+            {% if volunteers %}
+            {% for vol in volunteers %}
+            <div class="volunteer-item">
+                <div class="volunteer-info">
+                    <div class="avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div>
+                        <h3>{{ vol.name }}</h3>
+                        <p>{{ vol.email }}</p>
+                        <span class="status-badge status-{{ vol.status }}">
+                            {{ vol.status|title }}
+                        </span>
+                    </div>
+                </div>
+                {% if vol.status != 'completed' %}
+                <form action="{{ url_for('verify_volunteer', campaign_id=campaign.id, user_id=vol.user_id) }}"
+                    method="POST">
+                    <button type="submit" class="btn-verify">
+                        <i class="fas fa-check"></i> Verify Completion
+                    </button>
+                </form>
+                {% else %}
+                <button class="btn-verify" disabled>
+                    <i class="fas fa-check-double"></i> Verified
+                </button>
+                {% endif %}
+            </div>
+            {% endfor %}
+            {% else %}
+            <div style="padding: 3rem; text-align: center; color: var(--text-light);">
+                <i class="fas fa-users" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;"></i>
+                <p>No volunteers have joined this campaign yet.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+
+</html>

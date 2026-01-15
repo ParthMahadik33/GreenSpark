@@ -431,9 +431,14 @@
                         </div>
                         {% if user %}
                             {% if user_joined %}
-                                <button class="btn btn-outline btn-full" disabled style="margin-top: 1rem;">
-                                    <i class="fas fa-check"></i> Already Joined
-                                </button>
+                                <form method="POST" action="/campaigns/{{ campaign.id }}/complete" style="margin-top: 1rem;">
+                                    <button type="submit" class="btn btn-primary btn-full">
+                                        <i class="fas fa-check-circle"></i> Mark as Completed
+                                    </button>
+                                </form>
+                                <p style="text-align: center; margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-light);">
+                                    Complete the campaign to earn 20 eco points!
+                                </p>
                             {% elif campaign.volunteers_joined >= campaign.volunteers_needed %}
                                 <button class="btn btn-outline btn-full" disabled style="margin-top: 1rem;">
                                     <i class="fas fa-times"></i> Campaign Full
@@ -444,6 +449,9 @@
                                         <i class="fas fa-hand-holding-heart"></i> Join Campaign
                                     </button>
                                 </form>
+                                <p style="text-align: center; margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-light);">
+                                    Join to earn 10 points, complete to earn 20 more!
+                                </p>
                             {% endif %}
                         {% else %}
                             <a href="/login?redirect=/campaigns/{{ campaign.id }}" class="btn btn-primary btn-full" style="margin-top: 1rem;">

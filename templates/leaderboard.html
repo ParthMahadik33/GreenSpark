@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaderboard - GreenSpark</title>
+    <link rel="stylesheet" href="static/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .leaderboard-page { padding: 100px 0 60px; min-height: 100vh; background-color: var(--light-color); }
+        .leaderboard-header { background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: var(--white); padding: 3rem 0; margin-bottom: 3rem; text-align: center; }
+        .leaderboard-table { background: var(--white); padding: 2rem; border-radius: 12px; box-shadow: var(--shadow); }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 1rem; text-align: left; border-bottom: 1px solid var(--light-color); }
+        th { background: var(--light-color); font-weight: 600; }
+        .rank { font-size: 1.5rem; font-weight: bold; color: var(--primary-color); }
+        .rank-1 { color: #FFD700; }
+        .rank-2 { color: #C0C0C0; }
+        .rank-3 { color: #CD7F32; }
+        .badge-count { display: inline-flex; align-items: center; gap: 0.5rem; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-content">
+                <div class="logo">
+                    <i class="fas fa-leaf"></i>
+                    <a href="/" style="color: inherit;"><span>GreenSpark</span></a>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/campaigns">Campaigns</a></li>
+                    <li><a href="/leaderboard" class="active">Leaderboard</a></li>
+                </ul>
+                <div class="nav-buttons">
+                    {% if user %}
+                        <a href="/dashboard" class="btn btn-outline">Dashboard</a>
+                        <a href="/logout" class="btn btn-primary">Logout</a>
+                    {% else %}
+                        <a href="/login" class="btn btn-outline">Login</a>
+                        <a href="/register" class="btn btn-primary">Sign Up</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="leaderboard-header">
+        <div class="container">
+            <h1><i class="fas fa-trophy"></i> Leaderboard</h1>
+            <p>Top volunteers making a difference</p>
+        </div>
+    </div>
+
+    <div class="leaderboard-page">
+        <div class="container">
+            <div class="leaderboard-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 80px;">Rank</th>
+                            <th>Volunteer</th>
+                            <th>Location</th>
+                            <th style="text-align: center;">Eco Points</th>
+                            <th style="text-align: center;">Campaigns</th>
+                            <th style="text-align: center;">Badges</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user_data in top_users %}
+                        <tr>
+                            <td>
+                                <span class="rank {% if loop.index == 1 %}rank-1{% elif loop.index == 2 %}rank-2{% elif loop.index == 3 %}rank-3{% endif %}">
+                                    {% if loop.index <= 3 %}
+                                        <i class="fas fa-medal"></i>
+                                    {% endif %}
+                                    {{ loop.index }}
+                                </span>
+                            </td>
+                            <td><strong>{{ user_data.name }}</strong></td>
+                            <td>{{ user_data.location or 'N/A' }}</td>
+                            <td style="text-align: center;">
+                                <span style="color: var(--primary-color); font-weight: bold;">{{ user_data.eco_points }}</span>
+                            </td>
+                            <td style="text-align: center;">{{ user_data.campaigns_completed }}</td>
+                            <td style="text-align: center;">
+                                <span class="badge-count">
+                                    <i class="fas fa-medal" style="color: var(--primary-color);"></i>
+                                    {{ user_data.badge_count }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer footer-minimal">
+        <div class="container">
+            <div class="footer-minimal-content">
+                <div class="logo">
+                    <i class="fas fa-leaf"></i>
+                    <span>GreenSpark</span>
+                </div>
+                <p>&copy; 2025 GreenSpark. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
+

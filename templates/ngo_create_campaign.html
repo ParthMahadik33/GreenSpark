@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Campaign - GreenSpark</title>
+    <link rel="stylesheet" href="static/css/style.css">
+    <link rel="stylesheet" href="static/css/auth.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-content">
+                <div class="logo">
+                    <i class="fas fa-leaf"></i>
+                    <a href="/" style="color: inherit;"><span>GreenSpark</span></a>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="/ngo/dashboard">Dashboard</a></li>
+                </ul>
+                <div class="nav-buttons">
+                    <a href="/ngo/logout" class="btn btn-outline">Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="auth-section">
+        <div class="auth-container">
+            <div class="auth-form-wrapper" style="max-width: 800px; margin: 0 auto;">
+                <div class="auth-header">
+                    <h1>Create New Campaign</h1>
+                    <p>Post a campaign to attract volunteers</p>
+                </div>
+
+                {% if error %}
+                <div class="alert alert-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>{{ error }}</span>
+                </div>
+                {% endif %}
+
+                <form method="POST" class="auth-form">
+                    <div class="form-group">
+                        <label for="title">
+                            <i class="fas fa-heading"></i>
+                            Campaign Title *
+                        </label>
+                        <input type="text" id="title" name="title" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="short_description">
+                            <i class="fas fa-align-left"></i>
+                            Short Description *
+                        </label>
+                        <input type="text" id="short_description" name="short_description" placeholder="Brief one-line description" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">
+                            <i class="fas fa-align-left"></i>
+                            Full Description *
+                        </label>
+                        <textarea id="description" name="description" rows="6" required></textarea>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label for="category">
+                                <i class="fas fa-tags"></i>
+                                Category *
+                            </label>
+                            <select id="category" name="category" required>
+                                <option value="">Select Category</option>
+                                <option value="cleanup">Cleanup</option>
+                                <option value="tree-planting">Tree Planting</option>
+                                <option value="recycling">Recycling</option>
+                                <option value="awareness">Awareness</option>
+                                <option value="conservation">Conservation</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="location">
+                                <i class="fas fa-map-marker-alt"></i>
+                                Location *
+                            </label>
+                            <input type="text" id="location" name="location" required>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label for="date">
+                                <i class="fas fa-calendar"></i>
+                                Date *
+                            </label>
+                            <input type="date" id="date" name="date" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="time">
+                                <i class="fas fa-clock"></i>
+                                Time *
+                            </label>
+                            <input type="time" id="time" name="time" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="volunteers_needed">
+                                <i class="fas fa-users"></i>
+                                Volunteers Needed *
+                            </label>
+                            <input type="number" id="volunteers_needed" name="volunteers_needed" min="1" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="image_url">
+                            <i class="fas fa-image"></i>
+                            Image URL
+                        </label>
+                        <input type="url" id="image_url" name="image_url" placeholder="https://example.com/image.jpg">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="requirements">
+                            <i class="fas fa-list-check"></i>
+                            Requirements (one per line)
+                        </label>
+                        <textarea id="requirements" name="requirements" rows="4" placeholder="Bring gloves&#10;Wear comfortable shoes&#10;Bring water bottle"></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-full">
+                        <i class="fas fa-plus-circle"></i>
+                        Create Campaign
+                    </button>
+                </form>
+
+                <div style="text-align: center; margin-top: 1rem;">
+                    <a href="/ngo/dashboard" class="btn btn-outline">Back to Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+</html>
+

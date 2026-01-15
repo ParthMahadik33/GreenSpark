@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Campaign - GreenSpark</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .form-card {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        @media (max-width: 600px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container" style="padding: 0;">
+            <div class="nav-content">
+                <div class="logo">
+                    <i class="fas fa-leaf"></i>
+                    <span>GreenSpark</span>
+                </div>
+                <div class="nav-buttons">
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-outline">Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>Create New Campaign</h1>
+            <p>Post a new volunteer opportunity</p>
+        </div>
+
+        <div class="form-card">
+            <form action="{{ url_for('create_campaign') }}" method="POST">
+                <div class="form-group">
+                    <label for="title">Campaign Title</label>
+                    <input type="text" id="title" name="title" class="form-control" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="short_description">Short Description (for cards)</label>
+                    <input type="text" id="short_description" name="short_description" class="form-control"
+                        maxlength="100" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Full Description</label>
+                    <textarea id="description" name="description" class="form-control" rows="5" required></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="category">Category</label>
+                        <select id="category" name="category" class="form-control" required>
+                            <option value="cleanup">Cleanup</option>
+                            <option value="tree-planting">Tree Planting</option>
+                            <option value="awareness">Awareness</option>
+                            <option value="education">Education</option>
+                            <option value="wildlife">Wildlife Protection</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="location">Location</label>
+                        <input type="text" id="location" name="location" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="date">Date</label>
+                        <input type="date" id="date" name="date" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="time">Time</label>
+                        <input type="time" id="time" name="time" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="volunteers_needed">Volunteers Needed</label>
+                    <input type="number" id="volunteers_needed" name="volunteers_needed" class="form-control" min="1"
+                        required>
+                </div>
+
+                <div class="form-group">
+                    <label for="requirements">Requirements (one per line)</label>
+                    <textarea id="requirements" name="requirements" class="form-control" rows="3"
+                        placeholder="Bring water&#10;Wear comfortable shoes"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="image_url">Image URL</label>
+                    <input type="url" id="image_url" name="image_url" class="form-control"
+                        placeholder="https://example.com/image.jpg">
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%">Publish Campaign</button>
+            </form>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register NGO - GreenSpark</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        }
+
+        .auth-box {
+            background: var(--white);
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow-lg);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .auth-header i {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .auth-header h1 {
+            color: var(--text-dark);
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .auth-header p {
+            color: var(--text-light);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-dark);
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-family: inherit;
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.2);
+        }
+
+        .btn-block {
+            width: 100%;
+        }
+
+        .auth-footer {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .auth-footer a {
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-box">
+            <div class="auth-header">
+                <i class="fas fa-hand-holding-heart"></i>
+                <h1>Register Organization</h1>
+                <p>Create a profile for your NGO</p>
+            </div>
+
+            {% if error %}
+            <div class="alert">
+                {{ error }}
+            </div>
+            {% endif %}
+
+            <form action="{{ url_for('register_ngo') }}" method="POST">
+                <div class="form-group">
+                    <label for="name">Organization Name</label>
+                    <input type="text" id="name" name="name" class="form-control" required placeholder="e.g. Save Earth Foundation">
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" class="form-control" rows="3" placeholder="Briefly describe your mission"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="contact">Contact Information</label>
+                    <input type="text" id="contact" name="contact" class="form-control" required placeholder="Phone or Email">
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">Register NGO</button>
+            </form>
+
+            <div class="auth-footer">
+                <a href="{{ url_for('dashboard') }}"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

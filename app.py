@@ -28,7 +28,7 @@ def init_db():
     # Enable foreign keys
     cursor.execute('PRAGMA foreign_keys = ON')
     
-    # Users table (must be created first as it's referenced by other tables)
+    # Users table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -42,17 +42,32 @@ def init_db():
         )
     ''')
     
-    # NGOs table (must be created before campaigns as campaigns references it)
+    # NGOs table - with authentication
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS ngos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL,
             description TEXT,
             contact TEXT,
+            address TEXT,
             verified BOOLEAN DEFAULT 0,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
+    
+    # Migrate existing ngos table if needed
+    try:
+        cursor.execute('SELECT email FROM ngos LIMIT 1')
+    except sqlite3.OperationalError:
+        try:
+            cursor.execute('ALTER TABLE ngos ADD COLUMN email TEXT')
+            cursor.execute('ALTER TABLE ngos ADD COLUMN password TEXT')
+            cursor.execute('ALTER TABLE ngos ADD COLUMN address TEXT')
+        except:
+            pass
+
     
     # Campaigns table
     cursor.execute('''
@@ -77,18 +92,27 @@ def init_db():
         )
     ''')
     
-    # Campaign volunteers (many-to-many relationship)
+    # Campaign volunteers - Added status
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS campaign_volunteers (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             campaign_id INTEGER NOT NULL,
             user_id INTEGER NOT NULL,
+            status TEXT DEFAULT 'joined',
             joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (campaign_id) REFERENCES campaigns(id),
             FOREIGN KEY (user_id) REFERENCES users(id),
             UNIQUE(campaign_id, user_id)
         )
     ''')
+    
+    # Check for missing columns in campaign_volunteers (for migration)
+    try:
+        cursor.execute('SELECT status FROM campaign_volunteers LIMIT 1')
+    except sqlite3.OperationalError:
+        print("Migrating campaign_volunteers table: adding status")
+        cursor.execute("ALTER TABLE campaign_volunteers ADD COLUMN status TEXT DEFAULT 'joined'")
+
     
     # User badges
     cursor.execute('''
@@ -97,8 +121,42 @@ def init_db():
             user_id INTEGER NOT NULL,
             badge_name TEXT NOT NULL,
             badge_icon TEXT,
+            badge_description TEXT,
+            campaign_id INTEGER,
             earned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users(id)
+            FOREIGN KEY (user_id) REFERENCES users(id),
+            FOREIGN KEY (campaign_id) REFERENCES campaigns(id)
+        )
+    ''')
+    
+    # Activity log
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS activities (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            campaign_id INTEGER,
+            activity_type TEXT NOT NULL,
+            description TEXT,
+            points_earned INTEGER DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id),
+            FOREIGN KEY (campaign_id) REFERENCES campaigns(id)
+        )
+    ''')
+    
+    # Campaign completion tracking
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS campaign_completions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            campaign_id INTEGER NOT NULL,
+            user_id INTEGER NOT NULL,
+            completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            verified_by_ngo BOOLEAN DEFAULT 0,
+            verified_by INTEGER,
+            FOREIGN KEY (campaign_id) REFERENCES campaigns(id),
+            FOREIGN KEY (user_id) REFERENCES users(id),
+            FOREIGN KEY (verified_by) REFERENCES ngos(id),
+            UNIQUE(campaign_id, user_id)
         )
     ''')
     
@@ -107,7 +165,7 @@ def init_db():
         cursor.execute('SELECT COUNT(*) FROM campaigns')
         campaign_count = cursor.fetchone()[0]
         if campaign_count == 0:
-            # Insert sample campaigns
+            # Insert sample campaigns (same as before)
             sample_campaigns = [
                 ('Coastal Cleanup Drive', 
                  'Join us for a massive beach cleanup initiative to protect marine life and keep our coastlines clean. We will be collecting plastic waste, bottles, and other debris from the beach.',
@@ -138,6 +196,77 @@ def init_db():
 # Initialize database on startup
 init_db()
 
+# Helper functions
+def award_badge(user_id, badge_name, badge_icon, badge_description=None, campaign_id=None):
+    """Award a badge to a user"""
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    # Check if user already has this badge
+    existing = cursor.execute('''
+        SELECT id FROM user_badges 
+        WHERE user_id = ? AND badge_name = ?
+    ''', (user_id, badge_name)).fetchone()
+    
+    if not existing:
+        cursor.execute('''
+            INSERT INTO user_badges (user_id, badge_name, badge_icon, badge_description, campaign_id)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (user_id, badge_name, badge_icon, badge_description, campaign_id))
+        conn.commit()
+    conn.close()
+
+def log_activity(user_id, activity_type, description, points_earned=0, campaign_id=None):
+    """Log an activity for a user"""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT INTO activities (user_id, campaign_id, activity_type, description, points_earned)
+        VALUES (?, ?, ?, ?, ?)
+    ''', (user_id, campaign_id, activity_type, description, points_earned))
+    
+    # Update user's eco points
+    if points_earned > 0:
+        cursor.execute('''
+            UPDATE users SET eco_points = eco_points + ? WHERE id = ?
+        ''', (points_earned, user_id))
+    
+    conn.commit()
+    conn.close()
+
+def check_and_award_badges(user_id):
+    """Check user's progress and award badges accordingly"""
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    # Get user stats
+    campaigns_completed = cursor.execute('''
+        SELECT COUNT(*) FROM campaign_completions WHERE user_id = ?
+    ''', (user_id,)).fetchone()[0]
+    
+    total_points = cursor.execute('''
+        SELECT eco_points FROM users WHERE id = ?
+    ''', (user_id,)).fetchone()[0] or 0
+    
+    # Award badges based on milestones
+    if campaigns_completed >= 1:
+        award_badge(user_id, 'First Steps', 'seedling', 'Completed your first campaign!')
+    if campaigns_completed >= 5:
+        award_badge(user_id, 'Eco Warrior', 'shield-alt', 'Completed 5 campaigns!')
+    if campaigns_completed >= 10:
+        award_badge(user_id, 'Green Champion', 'trophy', 'Completed 10 campaigns!')
+    if campaigns_completed >= 25:
+        award_badge(user_id, 'Environmental Hero', 'medal', 'Completed 25 campaigns!')
+    
+    if total_points >= 100:
+        award_badge(user_id, 'Point Collector', 'coins', 'Earned 100 eco points!')
+    if total_points >= 500:
+        award_badge(user_id, 'Point Master', 'star', 'Earned 500 eco points!')
+    if total_points >= 1000:
+        award_badge(user_id, 'Point Legend', 'crown', 'Earned 1000 eco points!')
+    
+    conn.close()
+
 # Authentication decorator
 def login_required(f):
     @wraps(f)
@@ -145,6 +274,15 @@ def login_required(f):
         if 'user_id' not in session:
             flash('Please login to access this page', 'error')
             return redirect(url_for('login', next=request.url))
+        return f(*args, **kwargs)
+    return decorated_function
+
+def ngo_login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'ngo_id' not in session:
+            flash('Please login as NGO to access this page', 'error')
+            return redirect(url_for('ngo_login'))
         return f(*args, **kwargs)
     return decorated_function
 
@@ -287,11 +425,22 @@ def dashboard():
         {'title': 'Earned Badge', 'description': 'You earned the Eco Warrior badge', 'timestamp': '1 day ago'},
     ]
     
+    # Check if user owns an NGO
+    owned_ngo = cursor.execute('SELECT * FROM ngos WHERE owner_id = ?', (user_id,)).fetchone()
+    owned_campaigns = []
+    
+    if owned_ngo:
+        owned_campaigns = cursor.execute('''
+            SELECT * FROM campaigns WHERE ngo_id = ? ORDER BY date DESC
+        ''', (owned_ngo['id'],)).fetchall()
+    
     conn.close()
     
     return render_template('dashboard.html',
                          user={'id': user_id, 'name': session['user_name'], 'email': session['user_email']},
                          my_campaigns=my_campaigns,
+                         owned_ngo=owned_ngo,
+                         owned_campaigns=owned_campaigns,
                          stats={
                              'campaigns_joined': campaigns_joined,
                              'eco_points': eco_points,
@@ -403,6 +552,190 @@ def campaign_detail(campaign_id):
                          user={'id': session.get('user_id'), 'name': session.get('user_name')} if 'user_id' in session else None,
                          requirements=requirements)
 
+@app.route('/ngo/register', methods=['GET', 'POST'])
+@login_required
+def register_ngo():
+    """Register a new NGO"""
+    if request.method == 'POST':
+        name = request.form.get('name')
+        description = request.form.get('description')
+        contact = request.form.get('contact')
+        
+        if not all([name, contact]):
+            return render_template('register_ngo.html', error='Please fill in name and contact')
+            
+        conn = get_db()
+        cursor = conn.cursor()
+        
+        try:
+            cursor.execute('''
+                INSERT INTO ngos (name, description, contact, owner_id)
+                VALUES (?, ?, ?, ?)
+            ''', (name, description, contact, session['user_id']))
+            conn.commit()
+            flash('NGO registered successfully!', 'success')
+            return redirect(url_for('dashboard'))
+        except Exception as e:
+            flash(f'Error registering NGO: {e}', 'error')
+            return render_template('register_ngo.html')
+        finally:
+            conn.close()
+            
+    return render_template('register_ngo.html')
+
+@app.route('/campaign/create', methods=['GET', 'POST'])
+@login_required
+def create_campaign():
+    """Create a new campaign"""
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    # Check if user owns an NGO
+    ngo = cursor.execute('SELECT * FROM ngos WHERE owner_id = ?', (session['user_id'],)).fetchone()
+    
+    if not ngo:
+        conn.close()
+        flash('You must register an NGO to create campaigns', 'error')
+        return redirect(url_for('register_ngo'))
+        
+    if request.method == 'POST':
+        title = request.form.get('title')
+        desc = request.form.get('description')
+        short_desc = request.form.get('short_description')
+        category = request.form.get('category')
+        location = request.form.get('location')
+        date = request.form.get('date')
+        time = request.form.get('time')
+        needed = request.form.get('volunteers_needed')
+        image = request.form.get('image_url')
+        requirements = request.form.get('requirements')
+        
+        # Format requirements as JSON list
+        req_list = [r.strip() for r in requirements.split('\n') if r.strip()]
+        req_json = json.dumps(req_list)
+        
+        try:
+            cursor.execute('''
+                INSERT INTO campaigns (title, description, short_description, category, location, date, time, 
+                                     volunteers_needed, ngo_id, image, requirements)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (title, desc, short_desc, category, location, date, time, needed, ngo['id'], image, req_json))
+            conn.commit()
+            flash('Campaign created successfully!', 'success')
+            return redirect(url_for('dashboard'))
+        except Exception as e:
+            flash(f'Error creating campaign: {e}', 'error')
+        finally:
+            conn.close()
+            
+    conn.close()
+    return render_template('create_campaign.html')
+
+@app.route('/campaign/<int:campaign_id>/manage')
+@ngo_login_required
+def manage_campaign(campaign_id):
+    """Manage campaign volunteers"""
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    # Verify ownership
+    campaign = cursor.execute('''
+        SELECT c.* FROM campaigns c 
+        WHERE c.id = ? AND c.ngo_id = ?
+    ''', (campaign_id, session['ngo_id'])).fetchone()
+    
+    if not campaign:
+        conn.close()
+        flash('Access denied', 'error')
+        return redirect(url_for('ngo_dashboard'))
+        
+    # Get volunteers with status and completion info
+    volunteers = cursor.execute('''
+        SELECT u.id as user_id, u.name, u.email, cv.status, 
+               cc.id as completion_id, cc.verified_by_ngo
+        FROM campaign_volunteers cv
+        JOIN users u ON cv.user_id = u.id
+        LEFT JOIN campaign_completions cc ON cv.campaign_id = cc.campaign_id AND cv.user_id = cc.user_id
+        WHERE cv.campaign_id = ?
+        ORDER BY cv.joined_at DESC
+    ''', (campaign_id,)).fetchall()
+    
+    conn.close()
+    return render_template('manage_campaign.html', campaign=campaign, volunteers=volunteers)
+
+@app.route('/campaign/<int:campaign_id>/verify/<int:user_id>', methods=['POST'])
+@ngo_login_required
+def verify_volunteer(campaign_id, user_id):
+    """Verify volunteer completion and award points/badges"""
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    # Verify ownership
+    campaign = cursor.execute('''
+        SELECT c.* FROM campaigns c 
+        WHERE c.id = ? AND c.ngo_id = ?
+    ''', (campaign_id, session['ngo_id'])).fetchone()
+    
+    if not campaign:
+        conn.close()
+        flash('Access denied', 'error')
+        return redirect(url_for('ngo_dashboard'))
+    
+    # Mark as verified in completions
+    cursor.execute('''
+        UPDATE campaign_completions 
+        SET verified_by_ngo = 1, verified_by = ?
+        WHERE campaign_id = ? AND user_id = ?
+    ''', (session['ngo_id'], campaign_id, user_id))
+    
+    # Update volunteer status
+    cursor.execute('''
+        UPDATE campaign_volunteers 
+        SET status = 'verified' 
+        WHERE campaign_id = ? AND user_id = ?
+    ''', (campaign_id, user_id))
+    
+    # Award bonus points for verification
+    log_activity(user_id, 'campaign_verified', f'Campaign verified by NGO: {campaign["title"]}', 10, campaign_id)
+    
+    # Check for badges
+    check_and_award_badges(user_id)
+    
+    conn.commit()
+    conn.close()
+    
+    flash('Volunteer verified successfully!', 'success')
+    return redirect(url_for('manage_campaign', campaign_id=campaign_id))
+
+def check_badges(user_id, cursor):
+    """Check and award badges based on stats"""
+    # Count completed campaigns
+    count = cursor.execute('''
+        SELECT COUNT(*) FROM campaign_volunteers 
+        WHERE user_id = ? AND status = 'completed'
+    ''', (user_id,)).fetchone()[0]
+    
+    badges_to_award = []
+    
+    if count >= 1:
+        badges_to_award.append(('First Step', 'seedling'))
+    if count >= 5:
+        badges_to_award.append(('High Five', 'hand-holding-heart'))
+    if count >= 10:
+        badges_to_award.append(('Eco Warrior', 'leaf'))
+        
+    for name, icon in badges_to_award:
+        exists = cursor.execute('''
+            SELECT 1 FROM user_badges 
+            WHERE user_id = ? AND badge_name = ?
+        ''', (user_id, name)).fetchone()
+        
+        if not exists:
+            cursor.execute('''
+                INSERT INTO user_badges (user_id, badge_name, badge_icon)
+                VALUES (?, ?, ?)
+            ''', (user_id, name, icon))
+
 @app.route('/campaigns/<int:campaign_id>/join', methods=['POST'])
 @login_required
 def join_campaign(campaign_id):
@@ -436,8 +769,8 @@ def join_campaign(campaign_id):
     
     # Join campaign
     cursor.execute('''
-        INSERT INTO campaign_volunteers (campaign_id, user_id)
-        VALUES (?, ?)
+        INSERT INTO campaign_volunteers (campaign_id, user_id, status)
+        VALUES (?, ?, 'joined')
     ''', (campaign_id, user_id))
     
     # Update volunteer count
@@ -447,18 +780,266 @@ def join_campaign(campaign_id):
         WHERE id = ?
     ''', (campaign_id,))
     
-    # Award eco points
-    cursor.execute('''
-        UPDATE users 
-        SET eco_points = eco_points + 10
-        WHERE id = ?
-    ''', (user_id,))
+    # Log activity and award points
+    log_activity(user_id, 'campaign_joined', f'Joined campaign: {campaign["title"]}', 10, campaign_id)
+    
+    # Check for badges
+    check_and_award_badges(user_id)
     
     conn.commit()
     conn.close()
     
     flash('Successfully joined the campaign! You earned 10 eco points.', 'success')
     return redirect(url_for('campaign_detail', campaign_id=campaign_id))
+
+@app.route('/ngo/register', methods=['GET', 'POST'])
+def ngo_register():
+    """NGO Registration"""
+    if request.method == 'POST':
+        name = request.form.get('name')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        confirm_password = request.form.get('confirm_password')
+        description = request.form.get('description')
+        contact = request.form.get('contact')
+        address = request.form.get('address')
+        
+        if not all([name, email, password, contact]):
+            return render_template('ngo_register.html', error='Please fill in all required fields')
+        
+        if password != confirm_password:
+            return render_template('ngo_register.html', error='Passwords do not match')
+        
+        conn = get_db()
+        cursor = conn.cursor()
+        
+        # Check if email exists
+        existing = cursor.execute('SELECT id FROM ngos WHERE email = ?', (email,)).fetchone()
+        if existing:
+            conn.close()
+            return render_template('ngo_register.html', error='Email already registered')
+        
+        hashed_password = generate_password_hash(password)
+        cursor.execute('''
+            INSERT INTO ngos (name, email, password, description, contact, address)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ''', (name, email, hashed_password, description, contact, address))
+        
+        ngo_id = cursor.lastrowid
+        conn.commit()
+        conn.close()
+        
+        session['ngo_id'] = ngo_id
+        session['ngo_name'] = name
+        session['ngo_email'] = email
+        
+        flash('NGO registered successfully!', 'success')
+        return redirect(url_for('ngo_dashboard'))
+    
+    return render_template('ngo_register.html')
+
+@app.route('/ngo/login', methods=['GET', 'POST'])
+def ngo_login():
+    """NGO Login"""
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+        
+        if not email or not password:
+            return render_template('ngo_login.html', error='Please fill in all fields')
+        
+        conn = get_db()
+        cursor = conn.cursor()
+        ngo = cursor.execute('SELECT * FROM ngos WHERE email = ?', (email,)).fetchone()
+        conn.close()
+        
+        if ngo and check_password_hash(ngo['password'], password):
+            session['ngo_id'] = ngo['id']
+            session['ngo_name'] = ngo['name']
+            session['ngo_email'] = ngo['email']
+            return redirect(url_for('ngo_dashboard'))
+        else:
+            return render_template('ngo_login.html', error='Invalid email or password')
+    
+    return render_template('ngo_login.html')
+
+@app.route('/ngo/logout')
+def ngo_logout():
+    """NGO Logout"""
+    session.pop('ngo_id', None)
+    session.pop('ngo_name', None)
+    session.pop('ngo_email', None)
+    flash('Logged out successfully', 'success')
+    return redirect(url_for('index'))
+
+@app.route('/ngo/dashboard')
+@ngo_login_required
+def ngo_dashboard():
+    """NGO Dashboard"""
+    ngo_id = session['ngo_id']
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    ngo = cursor.execute('SELECT * FROM ngos WHERE id = ?', (ngo_id,)).fetchone()
+    
+    # Get NGO's campaigns
+    campaigns = cursor.execute('''
+        SELECT * FROM campaigns WHERE ngo_id = ? ORDER BY created_at DESC
+    ''', (ngo_id,)).fetchall()
+    
+    # Get stats
+    total_campaigns = len(campaigns)
+    total_volunteers = cursor.execute('''
+        SELECT COUNT(DISTINCT cv.user_id) FROM campaign_volunteers cv
+        INNER JOIN campaigns c ON cv.campaign_id = c.id
+        WHERE c.ngo_id = ?
+    ''', (ngo_id,)).fetchone()[0]
+    
+    conn.close()
+    
+    return render_template('ngo_dashboard.html', ngo=ngo, campaigns=campaigns,
+                         stats={'total_campaigns': total_campaigns, 'total_volunteers': total_volunteers})
+
+@app.route('/ngo/campaign/create', methods=['GET', 'POST'])
+@ngo_login_required
+def ngo_create_campaign():
+    """Create campaign as NGO"""
+    ngo_id = session['ngo_id']
+    
+    if request.method == 'POST':
+        title = request.form.get('title')
+        description = request.form.get('description')
+        short_description = request.form.get('short_description')
+        category = request.form.get('category')
+        location = request.form.get('location')
+        date = request.form.get('date')
+        time = request.form.get('time')
+        volunteers_needed = int(request.form.get('volunteers_needed', 0))
+        image = request.form.get('image_url')
+        requirements = request.form.get('requirements', '')
+        
+        req_list = [r.strip() for r in requirements.split('\n') if r.strip()]
+        req_json = json.dumps(req_list)
+        
+        conn = get_db()
+        cursor = conn.cursor()
+        
+        try:
+            cursor.execute('''
+                INSERT INTO campaigns (title, description, short_description, category, location, date, time,
+                                     volunteers_needed, ngo_id, image, requirements)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (title, description, short_description, category, location, date, time,
+                  volunteers_needed, ngo_id, image, req_json))
+            conn.commit()
+            flash('Campaign created successfully!', 'success')
+            return redirect(url_for('ngo_dashboard'))
+        except Exception as e:
+            flash(f'Error: {str(e)}', 'error')
+        finally:
+            conn.close()
+    
+    return render_template('ngo_create_campaign.html')
+
+@app.route('/campaigns/<int:campaign_id>/complete', methods=['POST'])
+@login_required
+def complete_campaign(campaign_id):
+    """Mark campaign as completed by volunteer"""
+    user_id = session['user_id']
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    # Check if user joined the campaign
+    joined = cursor.execute('''
+        SELECT id FROM campaign_volunteers 
+        WHERE campaign_id = ? AND user_id = ?
+    ''', (campaign_id, user_id)).fetchone()
+    
+    if not joined:
+        conn.close()
+        flash('You must join the campaign first', 'error')
+        return redirect(url_for('campaign_detail', campaign_id=campaign_id))
+    
+    # Check if already completed
+    completed = cursor.execute('''
+        SELECT id FROM campaign_completions 
+        WHERE campaign_id = ? AND user_id = ?
+    ''', (campaign_id, user_id)).fetchone()
+    
+    if completed:
+        conn.close()
+        flash('You have already marked this campaign as completed', 'error')
+        return redirect(url_for('campaign_detail', campaign_id=campaign_id))
+    
+    # Mark as completed (pending NGO verification)
+    cursor.execute('''
+        INSERT INTO campaign_completions (campaign_id, user_id, verified_by_ngo)
+        VALUES (?, ?, 0)
+    ''', (campaign_id, user_id))
+    
+    # Update volunteer status
+    cursor.execute('''
+        UPDATE campaign_volunteers SET status = 'completed' 
+        WHERE campaign_id = ? AND user_id = ?
+    ''', (campaign_id, user_id))
+    
+    # Award points for completion (will be verified by NGO)
+    log_activity(user_id, 'campaign_completed', f'Completed campaign: {campaign_id}', 20, campaign_id)
+    
+    # Check for badges
+    check_and_award_badges(user_id)
+    
+    conn.commit()
+    conn.close()
+    
+    flash('Campaign marked as completed! Waiting for NGO verification. You earned 20 eco points.', 'success')
+    return redirect(url_for('campaign_detail', campaign_id=campaign_id))
+
+@app.route('/leaderboard')
+def leaderboard():
+    """Leaderboard page"""
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    # Get top users by eco points
+    top_users = cursor.execute('''
+        SELECT u.id, u.name, u.eco_points, u.location,
+               COUNT(DISTINCT ub.id) as badge_count,
+               COUNT(DISTINCT cc.id) as campaigns_completed
+        FROM users u
+        LEFT JOIN user_badges ub ON u.id = ub.user_id
+        LEFT JOIN campaign_completions cc ON u.id = cc.user_id
+        GROUP BY u.id
+        ORDER BY u.eco_points DESC, campaigns_completed DESC
+        LIMIT 50
+    ''').fetchall()
+    
+    conn.close()
+    
+    return render_template('leaderboard.html', top_users=top_users,
+                         user={'id': session.get('user_id'), 'name': session.get('user_name')} if 'user_id' in session else None)
+
+@app.route('/activities')
+@login_required
+def activities():
+    """User activity feed"""
+    user_id = session['user_id']
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    activities_list = cursor.execute('''
+        SELECT a.*, c.title as campaign_title
+        FROM activities a
+        LEFT JOIN campaigns c ON a.campaign_id = c.id
+        WHERE a.user_id = ?
+        ORDER BY a.created_at DESC
+        LIMIT 50
+    ''', (user_id,)).fetchall()
+    
+    conn.close()
+    
+    return render_template('activities.html', activities=activities_list,
+                         user={'id': user_id, 'name': session['user_name']})
 
 
 if __name__ == '__main__':
